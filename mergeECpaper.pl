@@ -114,7 +114,7 @@ while ($line=<IN3>) {
 	    } elsif ($tmp[3] ne "") {#Other spe
 		$paperInfo{$tmp[0]} = "No: $tmp[3]";
 	    } elsif ($tmp[4] ne "") {#Positive but not curatible
-		$paperInfo{$tmp[0]} = "No: $tmp[4]";
+		$paperInfo{$tmp[0]} = "Positive but not curatible: $tmp[4]";
 	    }
 
 	    
