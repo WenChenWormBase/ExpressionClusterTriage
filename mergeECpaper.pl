@@ -19,7 +19,7 @@ foreach (@ecPaperCurated) {
     if ($paperInfo{$_}) {
 	#do nothing
     } else {
-	$paperInfo{$_} = "Yes. Expression cluster curated.";
+	$paperInfo{$_} = "Yes. Curated Expression Cluster.";
 	$ecPaperList[$i] = $_;
 	$i++;
     }
@@ -30,9 +30,9 @@ $query="query find Paper Microarray_experiment = * ";
 my @mrPaperCurated=$db->find($query);
 foreach (@mrPaperCurated) {
     if ($paperInfo{$_}) {
-        $paperInfo{$_} = join "\|", $paperInfo{$_}, "Microarray curated.";
+        $paperInfo{$_} = join "\|", $paperInfo{$_}, "Curated Microarray.";
     } else {
-	$paperInfo{$_} = "Yes. Microarray curated.";
+	$paperInfo{$_} = "Yes. Curated Microarray.";
 	$ecPaperList[$i] = $_;
 	$i++;
     }
@@ -44,19 +44,19 @@ print "got microarray paper list. $i papers in list now.\n";
 print "connecting to WS ...\n";
 $acedbpath='/home/citace/WS/acedb/';
 $db = Ace->connect(-path => $acedbpath,  -program => $tace) || die print "Connection failure: ", Ace->error;
-$query="query find Condition SAGE_experiment = * OR Analysis = RNAseq* OR Analysis = TAR*; follow Reference";
+$query="query find Condition SAGE_experiment = * OR Analysis = RNAseq* OR Analysis = TAR* OR Analysis = MassSpec*; follow Reference";
 my @otherCurated=$db->find($query);
 foreach (@otherCurated) {
     if ($paperInfo{$_}) {
-        $paperInfo{$_} = join "\|", $paperInfo{$_}, "RNAseq or Tiling array or SAGE curated.";
+        $paperInfo{$_} = join "\|", $paperInfo{$_}, "Curated RNAseq/Tiling array/SAGE/Proteomics.";
     } else {
-	$paperInfo{$_} = "Yes. RNAseq or Tiling array or SAGE curated.";
+	$paperInfo{$_} = "Yes. Curated RNAseq/Tiling array/SAGE/Proteomics.";
 	$ecPaperList[$i] = $_;
 	$i++;
     }
 }
 $db->close();
-print "got SAGE, tiling array and RNAseq paper list. $i papers in list now.\n";
+print "got SAGE, Proteomics, Tiling array and RNAseq paper list. $i papers in list now.\n";
 
 #get GEO microarray curation queue
 print "Reading MAPaperGSETable ... \n";
@@ -66,7 +66,7 @@ while ($line=<IN1>) {
     if ($line =~ /^New/) {
 	@tmp = split /\s+/, $line;
 	if ($paperInfo{$tmp[1]}) {
-	    $paperInfo{$tmp[1]} = join "\|", $paperInfo{$tmp[1]}, "Microarray on curation list";
+	    $paperInfo{$tmp[1]} = join "\|", $paperInfo{$tmp[1]}, "Microarray on GEO curation list for Wen";
 	} else {
 	    $paperInfo{$tmp[1]} = "Yes. Microarray on curation list";
 	    $ecPaperList[$i] = $tmp[1];
@@ -87,7 +87,7 @@ while ($line=<IN2>) {
 	if ($paperInfo{$tmp[1]}) {
         $paperInfo{$tmp[1]} = join "\|", $paperInfo{$tmp[1]}, "RNAseq or tiling array on curation list";
 	} else {
-	    $paperInfo{$tmp[1]} = "Yes. RNAseq or tiling array on curation list";
+	    $paperInfo{$tmp[1]} = "Yes. RNAseq or tiling array on GEO curation list for Gary Williams";
 	    $ecPaperList[$i] = $tmp[1];
 	    $i++;
 	}	    
@@ -101,25 +101,41 @@ print "Reading ExprClusterTriage.csv ... \n";
 open (IN3, "/home/wen/LargeDataSets/ExprCluster/ExprClusterTriage/ExprClusterTriage.csv") || die "can't open $!"; 
 while ($line=<IN3>) {
     chomp($line);
+    next unless $line =~ /^WBPaper/;
     @tmp = split /\t/, $line;
 	if ($paperInfo{$tmp[0]}) {
 	    #do nothing
 	} else {
-	    if ($tmp[2] ne "") { #SAGE
-		$paperInfo{$tmp[0]} = "Yes. SAGE: $tmp[2]";
-	    } elsif ($tmp[3] ne "") {#Protemoics
-		$paperInfo{$tmp[0]} = "Yes. Protemoics: $tmp[3]";
-	    } elsif ($tmp[4] ne "") {#RNAseq
-		$paperInfo{$tmp[0]} = "Yes. $tmp[4]";
-	    } elsif ($tmp[6] ne "") {#microarray
-		$paperInfo{$tmp[0]} = "Yes. Microarray: $tmp[6]";
-	    } elsif ($tmp[5] ne "") {#qPCR
-		$paperInfo{$tmp[0]} = "Yes. qPCR: $tmp[5]";
-	    } elsif ($tmp[7] ne "") {#false positive
-		$paperInfo{$tmp[0]} = "No. False positive: $tmp[7]";
-	    } elsif ($tmp[8] ne "") {#other spe.
-		$paperInfo{$tmp[0]} = "No. Other species: $tmp[8]";
+
+	    if ($tmp[1] ne "") { #Positive
+		$paperInfo{$tmp[0]} = "Positive: $tmp[1]";
+	    } elsif ($tmp[2] ne "") {#Negative
+		$paperInfo{$tmp[0]} = "No: $tmp[2]";
+	    } elsif ($tmp[3] ne "") {#Other spe
+		$paperInfo{$tmp[0]} = "No: $tmp[3]";
+	    } elsif ($tmp[4] ne "") {#Positive but not curatible
+		$paperInfo{$tmp[0]} = "No: $tmp[4]";
 	    }
+
+	    
+#	    if ($tmp[2] ne "") { #SAGE
+#		$paperInfo{$tmp[0]} = "Yes. SAGE: $tmp[2]";
+#	    } elsif ($tmp[3] ne "") {#Protemoics
+#		$paperInfo{$tmp[0]} = "Yes. Protemoics: $tmp[3]";
+#	    } elsif ($tmp[4] ne "") {#RNAseq
+#		$paperInfo{$tmp[0]} = "Yes. $tmp[4]";
+#	    } elsif ($tmp[6] ne "") {#microarray
+#		$paperInfo{$tmp[0]} = "Yes. $tmp[6]";
+#	    } elsif ($tmp[5] ne "") {#qPCR
+#		$paperInfo{$tmp[0]} = "Yes. qPCR: $tmp[5]";
+#	    } elsif ($tmp[7] ne "") {#false positive
+#		$paperInfo{$tmp[0]} = "No. False positive: $tmp[7]";
+#	    } elsif ($tmp[8] ne "") {#other spe.
+#		$paperInfo{$tmp[0]} = "No. Other species: $tmp[8]";
+#	    } elsif ($tmp[9] ne "") {#positive but not curatible
+#		$paperInfo{$tmp[0]} = "No. $tmp[8]";
+#	    }
+
 	    $ecPaperList[$i] = $tmp[0];
 	    $i++;
 	}	    
@@ -168,12 +184,13 @@ my $totalECpaper = $i;
 #--- print out complate paper info list ------------
 open (OUT, ">ecPaperList_merged.csv") || die "can't open $!";                         #open out
 $i = 0;
-foreach (@ecPaperList) {
-    if ($paperInfo{$_}) {
-	print OUT "$_\t$paperInfo{$_}\n";
+my $e;
+foreach $e (@ecPaperList) {
+    if ($paperInfo{$e}) {
+	print OUT "$e\t$paperInfo{$e}\n";
 	$i++;
     } else {
-	print "$_ has no paper info.\n";
+	print "$e has no paper info.\n";
     }
 }
 
